@@ -1,33 +1,26 @@
 using Microsoft.AspNetCore.Mvc;
+using weather_app_core.Connection;
+using weather_app_core.Models;
 
 namespace weather_app_core.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("[controller]/[action]")]
     public class WeatherForecastController : ControllerBase
     {
-        private static readonly string[] Summaries = new[]
-        {
-        "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-    };
+        private readonly IWeatherApiConnection weatherApiConnection;
 
-        private readonly ILogger<WeatherForecastController> _logger;
-
-        public WeatherForecastController(ILogger<WeatherForecastController> logger)
+        public WeatherForecastController(IWeatherApiConnection weatherApiConnection)
         {
-            _logger = logger;
+            this.weatherApiConnection = weatherApiConnection;
         }
 
         [HttpGet(Name = "GetWeatherForecast")]
-        public IEnumerable<WeatherForecast> Get()
+        public async Task<string> GetWeatherForecast()
         {
-            return Enumerable.Range(1, 5).Select(index => new WeatherForecast
-            {
-                Date = DateTime.Now.AddDays(index),
-                TemperatureC = Random.Shared.Next(-20, 55),
-                Summary = Summaries[Random.Shared.Next(Summaries.Length)]
-            })
-            .ToArray();
+            var response = await weatherApiConnection.SendRequest("https://api.weatherapi.com/v1/forecast.json?q=Warsaw&days=7&key=a5838f45011b45d1983155628230506%20");
+
+            return response.ToString();
         }
     }
 }
